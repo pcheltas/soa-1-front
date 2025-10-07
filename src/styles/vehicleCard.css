@@ -1,0 +1,26 @@
+.vehicle-cards-container {
+    /*display: flex;*/
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    flex-direction: row;
+    justify-content: center;
+    justify-self: center;
+    width: 100%;
+    align-content: center;
+    flex-wrap: wrap;
+}
+
+@media (max-width: 900px) {
+    .vehicle-cards-container {
+        grid-template-columns: repeat(1, 1fr);
+    }
+
+}
+
+.vehicle-card-container {
+    border-radius: 20px;
+    border: 2px solid black;
+    padding: 7vh;
+    margin: 10px 5px;
+    /*width: 45%*/
+}

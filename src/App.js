@@ -1,25 +1,40 @@
-import logo from './logo.svg';
 import './App.css';
+import {BrowserRouter, Route, Routes} from "react-router-dom";
+import {Provider} from "react-redux";
+import {persistor} from "./redux/store";
+import {PersistGate} from "redux-persist/integration/react";
+import store from './redux/store';
+import {ToastContainer} from "react-toastify";
+import VehiclePage from "./components/vechile/VehiclePage";
+import NotFoundPage from "./components/common/NotFoundPage";
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+const AppContent = () => {
+    return (
+        <BrowserRouter>
+            <Routes>
+                <Route path="/" element={<VehiclePage/>}/>
+                <Route path="*" element={<NotFoundPage/>}/>
+            </Routes>
+        </BrowserRouter>
+    );
+}
+
+const App = () => {
+    return (
+        <Provider store={store}>
+            <PersistGate loading={null} persistor={persistor}>
+                <div>
+                    <ToastContainer
+                        position="top-center"
+                        autoClose={3000}
+                        hideProgressBar={true}
+                        style={{zIndex: 9999999}}
+                    />
+                    <AppContent/>
+                </div>
+            </PersistGate>
+        </Provider>
+    )
 }
 
 export default App;

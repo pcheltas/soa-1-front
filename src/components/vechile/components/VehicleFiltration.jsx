@@ -45,8 +45,7 @@ const VehicleFiltration = ({ request, setRequest }) => {
             .map(([field, val]) => `${field}${val.op}${val.value}`)
             .join(",");
 
-        const encodedFilter = encodeURIComponent(filterStr);
-        setRequest("filter", encodedFilter);
+        setRequest("filter", filterStr);
     };
 
     const handleClear = () => {

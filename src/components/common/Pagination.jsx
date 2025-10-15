@@ -15,7 +15,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
             }}
         >
             <button
-                onClick={() => onPageChange(currentPage - 1)}
+                onClick={() => onPageChange(currentPage - 2)}
                 disabled={currentPage === 1}
                 style={{
                     padding: "6px 10px",
@@ -34,7 +34,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
             {pages.map((page) => (
                 <button
                     key={page}
-                    onClick={() => onPageChange(page)}
+                    onClick={() => onPageChange(page - 1)}
                     style={{
                         padding: "6px 12px",
                         borderRadius: "8px",
@@ -52,7 +52,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
             ))}
 
             <button
-                onClick={() => onPageChange(currentPage + 1)}
+                onClick={() => onPageChange(currentPage)}
                 disabled={currentPage === totalPages}
                 style={{
                     padding: "6px 10px",

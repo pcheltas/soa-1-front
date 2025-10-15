@@ -1,35 +1,38 @@
 import {createAsyncThunk, createSlice} from "@reduxjs/toolkit";
 import axios from "axios";
 
-// const API_URL = 'http://localhost:8080/api/v1';
+export const fetchVehicle = createAsyncThunk('fetchVehicle', async (path, {rejectWithValue}) => {
+        const headers = {
+            'Content-Type': 'application/json; charset=utf-8'
+        }
+        try {
+            const response = await axios.get(
+                `/api1/vehicles?${path}`,
+                {headers});
+            return response.data;
+        } catch (error) {
+            return rejectWithValue(error);
+        }
+    }
+);
 
-// export const fetchFeedbacks = createAsyncThunk('fetchFeedbacks', async () => {
-//     const response = await axios.get(`${process.env.REACT_APP_API_URL}/feedbacks`);
-//     if (response.status !== 200) {
-//         throw new Error('Не удалось получить отзывы');
-//     }
-//     return response.data;
-// });
-//
-// export const addFeedback = createAsyncThunk('addFeedback', async ({token, feedback}, {rejectWithValue}) => {
-//         const headers = {
-//             'Content-Type': 'application/json; charset=utf-8',
-//             'Authorization': 'Bearer ' + token
-//         }
-//         try {
-//             const response = await axios.post(
-//                 `${process.env.REACT_APP_API_URL}/feedbacks`,
-//                 feedback,
-//                 {headers}
-//             );
-//             return response.data;
-//         } catch (error) {
-//             return rejectWithValue(
-//                 'Не удалось создать отзыв'
-//             );
-//         }
-//     }
-// );
+export const addVehicle = createAsyncThunk('addVehicle', async (vehicle, {rejectWithValue}) => {
+        const headers = {
+            'Content-Type': 'application/json; charset=utf-8'
+        }
+        console.log(vehicle)
+        try {
+            const response = await axios.post(
+                '/api1/vehicles',
+                vehicle,
+                {headers}
+            );
+            return response.data;
+        } catch (error) {
+            return rejectWithValue(error);
+        }
+    }
+);
 //
 // export const updateFeedback = createAsyncThunk('updatefeedback', async ({token, feedback}, {rejectWithValue}) => {
 //         const headers = {
@@ -52,84 +55,67 @@ import axios from "axios";
 //     }
 // );
 //
-// export const deleteFeedback = createAsyncThunk('deleteFeedback', async ({token, feedbackId}, {rejectWithValue}) => {
-//         const headers = {
-//             'Content-Type': 'application/json; charset=utf-8',
-//             'Authorization': 'Bearer ' + token
-//         }
-//         try {
-//
-//             const response = await axios.delete(
-//                 `${process.env.REACT_APP_API_URL}/feedbacks/${feedbackId}`,
-//                 {headers}
-//             );
-//             return response.data;
-//         } catch (error) {
-//             return rejectWithValue(
-//                 'Не удалось удалить отзыв'
-//             );
-//         }
-//     }
-// );
+export const deleteVehicle = createAsyncThunk('deleteFeedback', async (id, {rejectWithValue}) => {
+        const headers = {
+            'Content-Type': 'application/json; charset=utf-8'
+        }
+        try {
+            const response = await axios.delete(
+                `/api1/vehicles/${id}`,
+                {headers}
+            );
+            return response.data;
+        } catch (error) {
+            return rejectWithValue(error);
+        }
+    }
+);
 
 const vehicleSlice = createSlice({
     name: 'vehicles',
     initialState: {
-        vehicles: [
-            {
-                "id": 1,
-                "name": "Tesla Model S",
-                "coordinates": {
-                    "x": 10,
-                    "y": 20
-                },
-                "creationDate": "2025-01-01",
-                "enginePower": 250.5,
-                "type": "CAR",
-                "fuelType": "GASOLINE"
-            },
-            {
-                "id": 2,
-                "name": "Moto1",
-                "coordinates": {
-                    "x": 10,
-                    "y": 20
-                },
-                "creationDate": "2025-01-01",
-                "enginePower": 250.5,
-                "type": "MOTORCYCLE",
-                "fuelType": "GASOLINE"
-            },
-            {
-                "id": 3,
-                "name": "Moto2",
-                "coordinates": {
-                    "x": 10,
-                    "y": 20
-                },
-                "creationDate": "2025-01-01",
-                "enginePower": 250.5,
-                "type": "MOTORCYCLE",
-                "fuelType": "GASOLINE"
-            }],
-        totalPages: 3,
+        vehicles: [],
+        totalPages: 0,
         page: 1,
+        path: "",
         loading: false,
         error: null,
     },
+    reducers: {
+        setPath: (state, action) => {
+            state.path = action.payload;
+        }
+    },
     extraReducers: (builder) => {
-        // builder
-        // .addCase(fetchFeedbacks.pending, (state) => {
-        //     state.loading = true;
-        // })
-        // .addCase(fetchFeedbacks.fulfilled, (state, action) => {
-        //     state.loading = false;
-        //     state.feedbacks = action.payload;
-        // })
-        // .addCase(fetchFeedbacks.rejected, (state, action) => {
-        //     state.loading = false;
-        //     state.error = action.error.message;
-        // })
+        builder
+            .addCase(fetchVehicle.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(fetchVehicle.fulfilled, (state, action) => {
+                state.loading = false;
+                state.error = null;
+                state.vehicles = action.payload.vehicles || [];
+                state.totalPages = action.payload.totalPages || 1;
+                state.page = action.payload.page || 1;
+            })
+            .addCase(fetchVehicle.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload?.response?.data || 'Unexpected error during fetching vehicles';
+            })
+            .addCase(addVehicle.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(addVehicle.fulfilled, (state, action) => {
+                state.loading = false;
+                state.error = null;
+            })
+            .addCase(addVehicle.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload?.response?.data || 'Unexpected error during vehicle creation';
+            });
     },
 });
+export const {setPath} = vehicleSlice.actions;
 export default vehicleSlice.reducer;

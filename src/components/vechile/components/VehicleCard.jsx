@@ -1,15 +1,15 @@
 import React, {useState} from 'react';
 import '../../../styles/vehicleCard.css'
 import '../../../styles/common.css'
-import {useSelector} from "react-redux";
+import {useDispatch, useSelector} from "react-redux";
 import Dropdown from '../../common/Dropdown';
 import {MdOutlineModeEdit, MdOutlineDelete} from "react-icons/md";
 import {FaRegSave} from "react-icons/fa";
+import {deleteVehicle, fetchVehicle} from "../../../redux/vehicleSlice";
 
-const VehicleCard = ({vehicle}) => {
-
-    const fuelTypes = useSelector(state => state.fuelTypes.fuelTypes)
-    const vehicleTypes = useSelector(state => state.vehicleTypes.vehicleTypes)
+const VehicleCard = ({vehicle, fuelTypes, vehicleTypes}) => {
+    const dispatch = useDispatch()
+    const fetchPath = useSelector(state => state.vehicles.path)
 
     const [isEditing, setIsEditing] = useState(false);
     const [vehicleEdited, setVehicleEdited] = useState(vehicle);
@@ -30,6 +30,11 @@ const VehicleCard = ({vehicle}) => {
             }));
         }
     };
+
+    const handleDelete = async () => {
+        await dispatch(deleteVehicle(vehicle.id))
+        await dispatch(fetchVehicle(fetchPath))
+    }
 
     return (
         <tr>
@@ -97,7 +102,7 @@ const VehicleCard = ({vehicle}) => {
                         </button>
                     </td>
                     <td>
-                        <button className='delete-button' style={{display: "flex", justifySelf: "center"}}>
+                        <button className='delete-button' style={{display: "flex", justifySelf: "center"}} onClick={handleDelete}>
                             <MdOutlineDelete size={20} style={{ flexShrink: 0 }}/>
                         </button>
                     </td>

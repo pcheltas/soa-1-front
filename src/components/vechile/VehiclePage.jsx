@@ -1,37 +1,53 @@
 import React, {useEffect, useState} from 'react';
 import VehicleCard from "./components/VehicleCard";
-import {useSelector} from "react-redux";
+import {useDispatch, useSelector} from "react-redux";
 import Pagination from "../common/Pagination";
 import Dropdown from "../common/Dropdown";
 import DialogWindow from "../common/DialogWindow";
 import VehicleFiltration from "./components/VehicleFiltration";
 import VehicleWheelsRange from "./components/VehicleWheelsRange";
 import VehicleEnginePowerRange from "./components/VehicleEnginePowerRange";
+import VehicleCreation from "./components/VehicleCreation";
+import {fetchVehicle, setPath} from "../../redux/vehicleSlice";
 
 const VehiclePage = () => {
+    const dispatch = useDispatch()
+
     const totalPages = useSelector(state => state.vehicles.totalPages)
     const currenPage = useSelector(state => state.vehicles.page)
     const vehicleList = useSelector(state => state.vehicles.vehicles)
+    const fuelTypes = useSelector(state => state.fuelTypes.fuelTypes)
+    const vehicleTypes = useSelector(state => state.vehicleTypes.vehicleTypes)
 
     const [isFiltrationOpen, setIsFiltrationOpen] = useState(false);
     const [isWheelRangeOpen, setIsWheelRangeOpen] = useState(false);
     const [isEnginePowerOpen, setIsEnginePowerOpen] = useState(false);
     const [isMaxCoordOpen, setIsMaxCoordOpen] = useState(false);
+    const [isCreationOpen, setIsCreationOpen] = useState(false);
     const [sortConfig, setSortConfig] = useState({ field: "", direction: "" });
 
 
     const [request, setRequest] = useState(
         {
-            page: 1,
+            page: 0,
             pageSize: 15,
             sort: "",
             filter: ""
         }
     )
 
-    useEffect(() => {
-        console.log(JSON.stringify(request))
-    }, [request]);
+    useEffect( () => {
+        const params = new URLSearchParams(
+            Object.fromEntries(
+                Object.entries(request).filter(([_, v]) => v !== "")
+            )
+        ).toString();
+        const fetchData = async () => {
+            await dispatch(setPath(params));
+            await dispatch(fetchVehicle(params));
+        };
+        fetchData();
+    }, [dispatch, request]);
 
     const handleSortClick = (field) => {
         setSortConfig(prev => {
@@ -86,8 +102,21 @@ const VehiclePage = () => {
     return (
         <div className="page">
             <div style={{width: "90%", justifySelf: "center"}}>
-                <div className='header'>
-                    Vehicles
+                <div>
+                    <div className='header'>
+                        Vehicles
+                    </div>
+                    <button className='usual-button'
+                            style={{display: "flex", justifySelf: "flex-end"}}
+                            onClick={() => setIsCreationOpen(!isCreationOpen)}>
+                        Create vehicle
+                    </button>
+                    <DialogWindow
+                        isOpen={isCreationOpen}
+                        onClose={() => setIsCreationOpen(!isCreationOpen)}
+                        title={"Vehicle creation"}
+                        children={<VehicleCreation vehicleTypes={vehicleTypes} fuelTypes={fuelTypes} setIsCreationOpen={setIsCreationOpen} isCreationOpen={isCreationOpen}/>}
+                    />
                 </div>
                 <div className='row-items-container bordered-container'>
                     <button className='usual-button' onClick={() => setIsMaxCoordOpen(!isMaxCoordOpen)}>
@@ -142,7 +171,7 @@ const VehiclePage = () => {
                     </thead>
                     <tbody>
                     {vehicleList.map(vehicle => (
-                        <VehicleCard key={vehicle.id} vehicle={vehicle}/>
+                        <VehicleCard key={vehicle.id} vehicle={vehicle} vehicleTypes={vehicleTypes} fuelTypes={fuelTypes}/>
                     ))}
                     </tbody>
                 </table>

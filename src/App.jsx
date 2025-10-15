@@ -5,8 +5,8 @@ import {persistor} from "./redux/store";
 import {PersistGate} from "redux-persist/integration/react";
 import store from './redux/store';
 import {ToastContainer} from "react-toastify";
-import VehiclePage from "./components/vechile/VehiclePage";
-import NotFoundPage from "./components/common/NotFoundPage";
+import VehiclePage from "./components/vechile/VehiclePage.jsx";
+import NotFoundPage from "./components/common/NotFoundPage.jsx";
 
 const AppContent = () => {
     return (

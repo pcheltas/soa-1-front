@@ -41,12 +41,12 @@ const VehicleCreation = ({vehicleTypes, fuelTypes, setIsCreationOpen, isCreation
             setError("Name is required")
             return false;
         }
-        if (vehicleData.coordinates.x === "" || isNaN(Number(vehicleData.coordinates.x))) {
-            setError("Coordinate X must be a number")
+        if (vehicleData.coordinates.x === "" || isNaN(Number(vehicleData.coordinates.x)) || !Number.isInteger(Number(vehicleData.coordinates.x))) {
+            setError("Coordinate X must be an integer number")
             return false;
         }
-        if (vehicleData.coordinates.y === "" || isNaN(Number(vehicleData.coordinates.y))) {
-            setError("Coordinate Y must be a number")
+        if (vehicleData.coordinates.y === "" || isNaN(Number(vehicleData.coordinates.y)) || !Number.isInteger(Number(vehicleData.coordinates.y))) {
+            setError("Coordinate Y must be an integer number")
             return false;
         }
         if (!vehicleData.creationDate) {

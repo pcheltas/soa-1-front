@@ -5,6 +5,7 @@ const Dropdown = ({value, setValue, valueName, data}) => {
                 id="dropdown"
                 value={value}
                 onChange={(e) => setValue(valueName, e.target.value)}
+                style={{cursor: "pointer"}}
             >
                 {data.map((opt) => (
                     <option key={opt} value={opt} style={{backgroundColor: "pink"}}>

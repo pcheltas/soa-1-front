@@ -8,24 +8,31 @@ import VehicleFiltration from "./components/VehicleFiltration";
 import VehicleWheelsRange from "./components/VehicleWheelsRange";
 import VehicleEnginePowerRange from "./components/VehicleEnginePowerRange";
 import VehicleCreation from "./components/VehicleCreation";
-import {fetchVehicle, setPath} from "../../redux/vehicleSlice";
+import {
+    deleteAveragePower,
+    fetchAverageEnginePower,
+    fetchMaxCoordVehicle,
+    fetchVehicle,
+    setPath
+} from "../../redux/vehicleSlice";
 
 const VehiclePage = () => {
     const dispatch = useDispatch()
 
     const totalPages = useSelector(state => state.vehicles.totalPages)
-    const currenPage = useSelector(state => state.vehicles.page)
+    const commonData = useSelector(state => state.vehicles.commonData)
+    const currentPage = useSelector(state => state.vehicles.page)
     const vehicleList = useSelector(state => state.vehicles.vehicles)
     const fuelTypes = useSelector(state => state.fuelTypes.fuelTypes)
     const vehicleTypes = useSelector(state => state.vehicleTypes.vehicleTypes)
+    const averageEnginePower = useSelector(state => state.vehicles.averagePower)
 
     const [isFiltrationOpen, setIsFiltrationOpen] = useState(false);
     const [isWheelRangeOpen, setIsWheelRangeOpen] = useState(false);
     const [isEnginePowerOpen, setIsEnginePowerOpen] = useState(false);
     const [isMaxCoordOpen, setIsMaxCoordOpen] = useState(false);
     const [isCreationOpen, setIsCreationOpen] = useState(false);
-    const [sortConfig, setSortConfig] = useState({ field: "", direction: "" });
-
+    const [sortConfig, setSortConfig] = useState({field: "", direction: ""});
 
     const [request, setRequest] = useState(
         {
@@ -36,12 +43,16 @@ const VehiclePage = () => {
         }
     )
 
-    useEffect( () => {
-        const params = new URLSearchParams(
+    const convertRequestToURLString = () => {
+        return new URLSearchParams(
             Object.fromEntries(
                 Object.entries(request).filter(([_, v]) => v !== "")
             )
         ).toString();
+    }
+
+    useEffect(() => {
+        const params = convertRequestToURLString();
         const fetchData = async () => {
             await dispatch(setPath(params));
             await dispatch(fetchVehicle(params));
@@ -58,7 +69,7 @@ const VehiclePage = () => {
 
             handleRequestChange("sort", newDirection ? `${newDirection}${field}` : "");
 
-            return { field: newDirection ? field : "", direction: newDirection };
+            return {field: newDirection ? field : "", direction: newDirection};
         });
     };
 
@@ -72,28 +83,59 @@ const VehiclePage = () => {
                 },
             }));
         } else {
-            setRequest(prev => ({
-                ...prev,
-                [field]: value,
-            }));
+            setRequest(prev => {
+                const newState = {
+                    ...prev,
+                    [field]: value,
+                };
+                if (field === "pageSize") {
+                    newState.page = 0;
+                }
+                return newState;
+            });
         }
     };
 
     const handlePageChange = (newPage) => {
         handleRequestChange("page", newPage)
-        console.log(newPage)
     }
 
 
-    const SortableHeader = ({ label, field }) => {
+    const SortableHeader = ({label, field}) => {
         const isActive = sortConfig.field === field;
 
         return (
-            <td onClick={() => handleSortClick(field)} >
-                <div style={{ display: "flex", flexDirection: "row", fontSize: "25px", lineHeight: 1, justifySelf: "center", alignItems: "center" }}>
+            <td onClick={commonData ? () => handleSortClick(field) : undefined}>
+                <div
+                    style={{
+                        display: "flex",
+                        flexDirection: "row",
+                        fontSize: "25px",
+                        lineHeight: 1,
+                        justifySelf: "center",
+                        alignItems: "center",
+                        cursor: commonData ? "pointer" : "default"
+                    }}
+                >
                     <p>{label}</p>
-                    <span style={{ color: isActive && sortConfig.direction === "+" ? "black" : "white" }}>↑</span>
-                    <span style={{ color: isActive && sortConfig.direction === "-" ? "black" : "white" }}>↓</span>
+                    {commonData && (
+                        <>
+                        <span
+                            style={{
+                                color: isActive && sortConfig.direction === "+" ? "black" : "white"
+                            }}
+                        >
+                            ↑
+                        </span>
+                            <span
+                                style={{
+                                    color: isActive && sortConfig.direction === "-" ? "black" : "white"
+                                }}
+                            >
+                            ↓
+                        </span>
+                        </>
+                    )}
                 </div>
             </td>
         );
@@ -115,45 +157,76 @@ const VehiclePage = () => {
                         isOpen={isCreationOpen}
                         onClose={() => setIsCreationOpen(!isCreationOpen)}
                         title={"Vehicle creation"}
-                        children={<VehicleCreation vehicleTypes={vehicleTypes} fuelTypes={fuelTypes} setIsCreationOpen={setIsCreationOpen} isCreationOpen={isCreationOpen}/>}
+                        children={<VehicleCreation vehicleTypes={vehicleTypes} fuelTypes={fuelTypes}
+                                                   setIsCreationOpen={setIsCreationOpen}
+                                                   isCreationOpen={isCreationOpen}/>}
                     />
                 </div>
-                <div className='row-items-container bordered-container'>
-                    <button className='usual-button' onClick={() => setIsMaxCoordOpen(!isMaxCoordOpen)}>
-                        Max coordinates vehicle
-                    </button>
-                    <button className='usual-button' onClick={() => setIsWheelRangeOpen(!isWheelRangeOpen)}>
-                        Vehicles with requested num of wheels
-                    </button>
-                    <DialogWindow
-                        isOpen={isWheelRangeOpen}
-                        onClose={() => setIsWheelRangeOpen(!isWheelRangeOpen)}
-                        title={"Vehicles with requested num of wheels"}
-                        children={<VehicleWheelsRange/>}
-                    />
-                    <button className='usual-button' onClick={() => setIsEnginePowerOpen(!isEnginePowerOpen)}>
-                        Vehicles with requested engine power
-                    </button>
-                    <DialogWindow
-                        isOpen={isEnginePowerOpen}
-                        onClose={() => setIsEnginePowerOpen(!isEnginePowerOpen)}
-                        title={"Vehicles with requested engine power"}
-                        children={<VehicleEnginePowerRange/>}
-                    />
+                <div className='column-items-container bordered-container'>
+                    <div className='row-items-container'>
+                        <button className='usual-button' onClick={() => dispatch(fetchMaxCoordVehicle())}>
+                            Max coordinates vehicle
+                        </button>
+                        <button className='usual-button' onClick={() => setIsWheelRangeOpen(!isWheelRangeOpen)}>
+                            Vehicles with requested num of wheels
+                        </button>
+                        <DialogWindow
+                            isOpen={isWheelRangeOpen}
+                            onClose={() => setIsWheelRangeOpen(!isWheelRangeOpen)}
+                            title={"Vehicles with requested num of wheels"}
+                            children={<VehicleWheelsRange onClose={() => setIsWheelRangeOpen(!isWheelRangeOpen)}/>}
+                        />
+                        <button className='usual-button' onClick={() => setIsEnginePowerOpen(!isEnginePowerOpen)}>
+                            Vehicles with requested engine power
+                        </button>
+                        <DialogWindow
+                            isOpen={isEnginePowerOpen}
+                            onClose={() => setIsEnginePowerOpen(!isEnginePowerOpen)}
+                            title={"Vehicles with requested engine power"}
+                            children={<VehicleEnginePowerRange onClose={() => setIsEnginePowerOpen(!isEnginePowerOpen)}/>}
+                        />
+                        <div className='column-items-container'>
+                            <button className='usual-button' onClick={() => dispatch(fetchAverageEnginePower())}>
+                                Average engine power
+                            </button>
+                            {!isNaN(Number(averageEnginePower)) && averageEnginePower !== "" ?
+                                <div>Average engine power of all vehicles: {averageEnginePower}</div>
+                                : null
+                            }
+
+                        </div>
+                    </div>
+                    <div style={{display: "flex", justifyContent: "right"}}>
+                        <button className='usual-button'
+                                style={{backgroundColor: "rgb(126 108 143)", width: "fit-content"}}
+                                onClick={() => {
+                                    dispatch(fetchVehicle(convertRequestToURLString()))
+                                    dispatch(deleteAveragePower())
+                        }}>
+                            Clear specific search
+                        </button>
+                    </div>
                 </div>
-                <div>
-                    <button className='usual-button' onClick={() => setIsFiltrationOpen(!isFiltrationOpen)}>Filtration
-                    </button>
-                    <DialogWindow
-                        isOpen={isFiltrationOpen}
-                        onClose={() => setIsFiltrationOpen(!isFiltrationOpen)}
-                        title={"Filtration"}
-                        children={<VehicleFiltration
-                            request={request}
-                            setRequest={handleRequestChange}
-                        />}
-                    />
-                </div>
+                {commonData ?
+                    <div>
+                        <button className='usual-button'
+                                onClick={() => setIsFiltrationOpen(!isFiltrationOpen)}>Filtration
+                        </button>
+                        <DialogWindow
+                            isOpen={isFiltrationOpen}
+                            onClose={() => setIsFiltrationOpen(!isFiltrationOpen)}
+                            title={"Filtration"}
+                            children={<VehicleFiltration
+                                request={request}
+                                setRequest={handleRequestChange}
+                                vehicleType={vehicleTypes}
+                                fuelType={fuelTypes}
+                            />}
+                        />
+                    </div>
+                    : null
+                }
+
                 <table>
                     <thead>
                     <tr>
@@ -171,29 +244,34 @@ const VehiclePage = () => {
                     </thead>
                     <tbody>
                     {vehicleList.map(vehicle => (
-                        <VehicleCard key={vehicle.id} vehicle={vehicle} vehicleTypes={vehicleTypes} fuelTypes={fuelTypes}/>
+                        <VehicleCard key={vehicle.id} vehicle={vehicle} vehicleTypes={vehicleTypes}
+                                     fuelTypes={fuelTypes}/>
                     ))}
                     </tbody>
                 </table>
-                <div className="always-row-items-container">
-                    <div style={{flex: 1}}></div>
-                    <div style={{flex: 1, display: "flex", justifyContent: "center"}}>
-                        <Pagination
-                            totalPages={totalPages}
-                            currentPage={currenPage}
-                            onPageChange={handlePageChange}
-                        />
+                {commonData ?
+                    <div className="always-row-items-container">
+                        <div style={{flex: 1}}></div>
+                        <div style={{flex: 1, display: "flex", justifyContent: "center"}}>
+                            <Pagination
+                                totalPages={totalPages}
+                                currentPage={currentPage}
+                                onPageChange={handlePageChange}
+                            />
+                        </div>
+                        <div style={{flex: 1, display: "flex", justifyContent: "center", alignItems: "center"}}>
+                            Show count:
+                            <Dropdown
+                                valueName="pageSize"
+                                value={request.pageSize}
+                                setValue={handleRequestChange}
+                                data={[5, 10, 15, 20]}
+                            />
+                        </div>
                     </div>
-                    <div style={{flex: 1, display: "flex", justifyContent: "center", alignItems: "center"}}>
-                        Show count:
-                        <Dropdown
-                            valueName="pageSize"
-                            value={request.pageSize}
-                            setValue={handleRequestChange}
-                            data={[5, 10, 15, 20]}
-                        />
-                    </div>
-                </div>
+                    : null
+                }
+
             </div>
         </div>
     );

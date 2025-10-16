@@ -1,14 +1,17 @@
 import React, {useState} from 'react';
 import Dropdown from "../../common/Dropdown";
+import {useDispatch} from "react-redux";
+import {fetchVehicleWheels} from "../../../redux/vehicleSlice";
 
-const VehicleWheelsRange = () => {
+const VehicleWheelsRange = ({onClose}) => {
+    const dispatch = useDispatch()
     const [wheelsFrom, setWheelsFrom] = useState("");
     const [wheelsTo, setWheelsTo] = useState("");
     const [error, setError] = useState("");
 
     const wheelsOptions = Array.from({ length: 4 }, (_, i) => i + 1);
 
-    const handleApply = () => {
+    const handleApply = async () => {
         if (wheelsFrom === "" || wheelsTo === "") {
             setError("Both fields must be selected");
             return;
@@ -20,13 +23,16 @@ const VehicleWheelsRange = () => {
         }
 
         setError("");
-        console.log(`Applied wheels range: ${wheelsFrom} - ${wheelsTo}`);
+        const resultAction = await dispatch(fetchVehicleWheels({from: wheelsFrom, to: wheelsTo}));
+        if (fetchVehicleWheels.fulfilled.match(resultAction)) {
+            onClose && onClose();
+        }
+
     };
 
     const handleClear = () => {
         setWheelsFrom("");
         setWheelsTo("");
-        console.log(wheelsFrom, wheelsTo);
     };
 
     return (

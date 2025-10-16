@@ -1,11 +1,14 @@
 import React, {useState} from 'react';
+import {useDispatch} from "react-redux";
+import {fetchVehicleEngine} from "../../../redux/vehicleSlice";
 
-const VehicleEnginePowerRange = () => {
+const VehicleEnginePowerRange = ({onClose}) => {
+    const dispatch = useDispatch()
     const [powerFrom, setPowerFrom] = useState("");
     const [powerTo, setPowerTo] = useState("");
     const [error, setError] = useState("")
 
-    const handleApply = () => {
+    const handleApply = async () => {
         if (powerFrom === "" || powerTo === "") {
             setError("Both fields must be filled");
             return;
@@ -22,7 +25,10 @@ const VehicleEnginePowerRange = () => {
         }
 
         setError("");
-        console.log(`Applied engine power range: ${powerFrom}-${powerTo}`);
+        const resultAction = await dispatch(fetchVehicleEngine({from: powerFrom, to: powerTo}));
+        if (fetchVehicleEngine.fulfilled.match(resultAction)) {
+            onClose && onClose();
+        }
     };
 
     const handleClear = () => {

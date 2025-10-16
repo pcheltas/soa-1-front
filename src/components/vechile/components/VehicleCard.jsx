@@ -5,7 +5,8 @@ import {useDispatch, useSelector} from "react-redux";
 import Dropdown from '../../common/Dropdown';
 import {MdOutlineModeEdit, MdOutlineDelete} from "react-icons/md";
 import {FaRegSave} from "react-icons/fa";
-import {deleteVehicle, fetchVehicle} from "../../../redux/vehicleSlice";
+import {deleteVehicle, fetchVehicle, updateVehicle} from "../../../redux/vehicleSlice";
+import {toast} from "react-toastify";
 
 const VehicleCard = ({vehicle, fuelTypes, vehicleTypes}) => {
     const dispatch = useDispatch()
@@ -35,6 +36,28 @@ const VehicleCard = ({vehicle, fuelTypes, vehicleTypes}) => {
         await dispatch(deleteVehicle(vehicle.id))
         await dispatch(fetchVehicle(fetchPath))
     }
+
+    const validateVehicle = (v) => {
+        if (!v.name || v.name.trim() === "") return "Name is required";
+        if (!v.coordinates || isNaN(v.coordinates.x)  || !Number.isInteger(Number(v.coordinates.x))) return "Coordinate X must be an integer number";
+        if (!v.coordinates || isNaN(v.coordinates.y) || !Number.isInteger(Number(v.coordinates.y))) return "Coordinate Y must be an integer number";
+        if (isNaN(v.enginePower) || v.enginePower <= 0) return "Engine power must be positive";
+        if (!v.type) return "Vehicle type is required";
+        if (!v.fuelType) return "Fuel type is required";
+        return null;
+    };
+
+    const handleSubmit = async () => {
+        const validationError = validateVehicle(vehicleEdited);
+        if (validationError) {
+            toast.error(validationError)
+            return;
+        }
+
+        await dispatch(updateVehicle({ id: vehicleEdited.id, vehicleEdited: vehicleEdited }));
+        await dispatch(fetchVehicle(fetchPath));
+        setIsEditing(false);
+    };
 
     return (
         <tr>
@@ -73,9 +96,7 @@ const VehicleCard = ({vehicle, fuelTypes, vehicleTypes}) => {
                     </td>
                     <td>
                         <button className='usual-rounded-button' style={{display: "flex", justifySelf: "center"}}
-                        onClick={() => {
-                            setIsEditing(!isEditing)
-                        }}>
+                        onClick={handleSubmit}>
                             <FaRegSave size={20} style={{ flexShrink: 0 }}/>
                         </button>
                     </td>

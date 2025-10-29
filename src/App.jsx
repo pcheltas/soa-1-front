@@ -10,7 +10,7 @@ import NotFoundPage from "./components/common/NotFoundPage.jsx";
 
 const AppContent = () => {
     return (
-        <BrowserRouter>
+        <BrowserRouter basename="/~s367517/soa_lab2/index.html">
             <Routes>
                 <Route path="/" element={<VehiclePage/>}/>
                 <Route path="*" element={<NotFoundPage/>}/>

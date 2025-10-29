@@ -1,13 +1,16 @@
 import {createAsyncThunk, createSlice} from "@reduxjs/toolkit";
 import axios from "axios";
 
+export const defaultApi1 = "https://localhost:2828/api/v1"
+export const defaultApi2 = "https://localhost:2929/api/v1/shop/search"
+
 export const fetchVehicle = createAsyncThunk('fetchVehicle', async (path, {rejectWithValue}) => {
         const headers = {
             'Content-Type': 'application/json; charset=utf-8'
         }
         try {
             const response = await axios.get(
-                `/api1/vehicles?${path}`,
+                `${defaultApi1}/vehicles?${path}`,
                 {headers});
             return response.data;
         } catch (error) {
@@ -22,7 +25,7 @@ export const fetchAverageEnginePower = createAsyncThunk('fetchAverageEnginePower
         }
         try {
             const response = await axios.get(
-                `/api1/vehicles/engine-powers/average`,
+                `${defaultApi1}/vehicles/engine-powers/average`,
                 {headers});
             return response.data;
         } catch (error) {
@@ -37,7 +40,7 @@ export const fetchVehicleWheels = createAsyncThunk('fetchVehicleWheels', async (
         }
         try {
             const response = await axios.get(
-                `/api2/by-number-of-wheels/${from}/${to}`,
+                `${defaultApi2}/by-number-of-wheels/${from}/${to}`,
                 {headers});
             return response.data;
         } catch (error) {
@@ -52,7 +55,7 @@ export const fetchVehicleEngine = createAsyncThunk('fetchVehicleEngine', async (
         }
         try {
             const response = await axios.get(
-                `/api2/by-engine-power/${from}/${to}`,
+                `${defaultApi2}/by-engine-power/${from}/${to}`,
                 {headers});
             return response.data;
         } catch (error) {
@@ -67,7 +70,7 @@ export const fetchMaxCoordVehicle = createAsyncThunk('fetchMaxCoordVehicle', asy
         }
         try {
             const response = await axios.get(
-                `/api1/vehicles/coordinates/max`,
+                `${defaultApi1}/vehicles/coordinates/max`,
                 {headers});
             return response.data;
         } catch (error) {
@@ -82,7 +85,7 @@ export const addVehicle = createAsyncThunk('addVehicle', async (vehicle, {reject
         }
         try {
             const response = await axios.post(
-                '/api1/vehicles',
+                `${defaultApi1}/vehicles`,
                 vehicle,
                 {headers}
             );
@@ -100,7 +103,7 @@ export const updateVehicle = createAsyncThunk('updateVehicle', async ({id, vehic
         const {id: _, ...payload} = vehicleEdited;
         try {
             const response = await axios.put(
-                `/api1/vehicles/${id}`,
+                `${defaultApi1}/vehicles/${id}`,
                 vehicleEdited,
                 {headers}
             );
@@ -117,7 +120,7 @@ export const deleteVehicle = createAsyncThunk('deleteFeedback', async (id, {reje
         }
         try {
             const response = await axios.delete(
-                `/api1/vehicles/${id}`,
+                `${defaultApi1}/vehicles/${id}`,
                 {headers}
             );
             return response.data;
